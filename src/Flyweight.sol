@@ -14,14 +14,11 @@ contract Flyweight {
     struct Price {
         string token0;
         string token1;
-        string unixTimestamp;
         string price;
+        string unixTimestamp;
     }
 
-    event GetNewOrderResults (
-    );
-
-    enum OrderState { UNTRIGGERED, TRIGGERED, EXECUTED }
+    enum OrderState { UNTRIGGERED, TRIGGERED }
     enum OrderTriggerDirection { BELOW, EQUAL, ABOVE }
 
     uint public ordersCount;
@@ -29,35 +26,19 @@ contract Flyweight {
     mapping(uint => Order) public orders;
     mapping(uint => Price) public prices;
 
-    function storePriceAndGetNewOrderResults(string calldata token0, string calldata token1, string calldata unixTimestamp, string calldata price) external {
-        storePrice(token0, token1, unixTimestamp, price);
-        emit GetNewOrderResults();
-    }
+    function storePricesAndProcessTriggeredOrderIds(Price[] calldata newPrices, uint[] calldata newTriggeredOrderIds) external {
+        for (uint i = 0; i < newPrices.length; i++) {
+            prices[pricesCount - 1] = newPrices[i];
+            pricesCount++;
+        }
 
-    function storePrice(string calldata token0, string calldata token1, string calldata unixTimestamp, string calldata price) private {
-        prices[pricesCount] = Price({
-            token0: token0,
-            token1: token1,
-            unixTimestamp: unixTimestamp,
-            price: price
-        });
-
-        pricesCount++;
-    }
-
-    function storeAndProcessOrderResults(uint[] calldata triggeredOrderIds) external {
-        storeOrderResults(triggeredOrderIds);
-        processOrderResults(triggeredOrderIds);
-    }
-
-    function storeOrderResults(uint[] calldata triggeredOrderIds) private {
-        for (uint i = 0; i < triggeredOrderIds.length; i++) {
-            uint orderId = triggeredOrderIds[i];
+        for (uint i = 0; i < newTriggeredOrderIds.length; i++) {
+            uint orderId = newTriggeredOrderIds[i];
             orders[orderId].orderState = OrderState.TRIGGERED;
         }
     }
 
-    function processOrderResults(uint[] calldata triggeredOrderIds) private {
+    function processTriggeredOrderIds(uint[] calldata newTriggeredOrderIds) private {
         // todo uniswap
     }
 }
