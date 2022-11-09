@@ -3,11 +3,12 @@ pragma solidity ^0.8.9;
 
 contract Flyweight {
     struct Order {
+        uint id;
         OrderState orderState;
         string tokenIn;
         string tokenOut;
         string tokenInTriggerPrice;
-        string tokenOutTriggerPrice;
+        OrderTriggerDirection direction;
         uint tokenInAmount;
     }
     struct Price {
@@ -17,12 +18,14 @@ contract Flyweight {
         string price;
     }
 
-    event GetNewOrderResults ();
+    event GetNewOrderResults (
+    );
 
     enum OrderState { UNTRIGGERED, TRIGGERED, EXECUTED }
+    enum OrderTriggerDirection { BELOW, EQUAL, ABOVE }
 
-    uint public OrdersCount;
-    uint public PricesCount;
+    uint public ordersCount;
+    uint public pricesCount;
     mapping(uint => Order) public orders;
     mapping(uint => Price) public prices;
 
@@ -32,14 +35,14 @@ contract Flyweight {
     }
 
     function storePrice(string calldata token0, string calldata token1, string calldata unixTimestamp, string calldata price) private {
-        prices[PricesCount] = Price({
+        prices[pricesCount] = Price({
             token0: token0,
             token1: token1,
             unixTimestamp: unixTimestamp,
             price: price
         });
 
-        PricesCount++;
+        pricesCount++;
     }
 
     function storeAndProcessOrderResults(uint[] calldata triggeredOrderIds) external {
