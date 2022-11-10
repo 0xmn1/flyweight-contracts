@@ -26,9 +26,25 @@ contract Flyweight {
     mapping(uint => Order) public orders;
     mapping(uint => Price) public prices;
 
+    function addNewOrder(string calldata tokenIn, string calldata tokenOut, string calldata tokenInTriggerPrice, OrderTriggerDirection direction, uint tokenInAmount) external returns(uint) {
+        uint id = ordersCount;
+        orders[id] = Order({
+            id: id,
+            orderState: OrderState.UNTRIGGERED,
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
+            tokenInTriggerPrice: tokenInTriggerPrice,
+            direction: direction,
+            tokenInAmount: tokenInAmount
+        });
+
+        ordersCount++;
+        return id;
+    }
+
     function storePricesAndProcessTriggeredOrderIds(Price[] calldata newPrices, uint[] calldata newTriggeredOrderIds) external {
         for (uint i = 0; i < newPrices.length; i++) {
-            prices[pricesCount - 1] = newPrices[i];
+            prices[pricesCount] = newPrices[i];
             pricesCount++;
         }
 
