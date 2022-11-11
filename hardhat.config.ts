@@ -12,7 +12,22 @@ if (!process.env.GOERLI_PRIVATE_KEY) {
 }
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.17",
+  solidity: {
+    compilers: [
+      {
+        version: "0.7.0"
+      },
+      {
+        version: "0.7.5"
+      },
+      {
+        version: "0.8.0"
+      },
+      {
+        version: "0.8.17"
+      }
+    ]
+  },
   paths: {
     sources: './src/contracts'
   },

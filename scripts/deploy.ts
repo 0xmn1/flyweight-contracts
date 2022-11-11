@@ -1,19 +1,10 @@
 import { ethers } from "hardhat";
 
 async function main() {
-
-  console.log(1); // dm
-
   const flyweightFactory = await ethers.getContractFactory("Flyweight");
-
-  console.log(2); // dm
-
   const flyweightContract = await flyweightFactory.deploy();
-
-  console.log(3); // dm
-
+  console.log('Deploying...');
   await flyweightContract.deployed();
-
   console.log(`Deployed to ${flyweightContract.address}`);
 }
 
