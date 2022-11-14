@@ -10,6 +10,9 @@ if (!process.env.ALCHEMY_URL) {
 if (!process.env.GOERLI_PRIVATE_KEY) {
   throw 'Config error: missing goerli private key';
 }
+if (!process.env.GOERLI_ETHERSCAN_API_KEY) {
+  throw 'Config error: missing goerli etherscan api key';
+}
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -35,6 +38,11 @@ const config: HardhatUserConfig = {
     goerli: {
       url: process.env.ALCHEMY_URL,
       accounts: [process.env.GOERLI_PRIVATE_KEY]
+    }
+  },
+  etherscan: {
+    apiKey: {
+      goerli: process.env.GOERLI_ETHERSCAN_API_KEY
     }
   }
 };
