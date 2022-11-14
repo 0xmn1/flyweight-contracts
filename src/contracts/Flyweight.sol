@@ -5,6 +5,8 @@ import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Flyweight {
+    address constant public UNISWAP_ROUTER_ADDRESS = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
     struct Order {
         uint id;
         address owner;
@@ -47,11 +49,10 @@ contract Flyweight {
         tokenAddresses["UNI"] = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
         tokenAddresses["WETH"] = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
 
-        address uniswapRouterAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
         IERC20 uni = IERC20(tokenAddresses["UNI"]);
         IERC20 weth = IERC20(tokenAddresses["WETH"]);
-        uni.approve(uniswapRouterAddress, type(uint).max);
-        weth.approve(uniswapRouterAddress, type(uint).max);
+        uni.approve(UNISWAP_ROUTER_ADDRESS, type(uint).max);
+        weth.approve(UNISWAP_ROUTER_ADDRESS, type(uint).max);
     }
 
     function addNewOrder(string calldata tokenIn, string calldata tokenOut, string calldata tokenInTriggerPrice, OrderTriggerDirection direction, uint tokenInAmount) external returns(uint) {
@@ -106,8 +107,7 @@ contract Flyweight {
         address[2] memory path = [tokenAddresses[order.tokenIn], tokenAddresses[order.tokenOut]];
         uint tokenOutMinQuote = 0;  // todo: when front-end is made, it should allow user-defined max slippage
 
-        address uniswapRouterAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-        ISwapRouter swapRouter = ISwapRouter(uniswapRouterAddress);
+        ISwapRouter swapRouter = ISwapRouter(UNISWAP_ROUTER_ADDRESS);
         ISwapRouter.ExactInputSingleParams memory swapParams = ISwapRouter.ExactInputSingleParams({
             tokenIn: path[0],
             tokenOut: path[1],
