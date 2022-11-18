@@ -51,16 +51,23 @@ contract Flyweight {
     }
 
     function getWhitelistedSymbols(string[] calldata symbols) external view returns(string[] memory) {
-        string[] memory whitelistedSymbols;
+        string[] memory whitelist = new string[](symbols.length);
+        uint whitelistCount = 0;
         for (uint i = 0; i < symbols.length; i++) {
             string calldata symbol = symbols[i];
             bool isWhitelisted = tokenWhitelist.addresses(symbol) != address(0);
             if (isWhitelisted) {
-                whitelistedSymbols[whitelistedSymbols.length] = symbol;
+                whitelist[whitelistCount] = symbol;
+                whitelistCount++;
             }
         }
 
-        return whitelistedSymbols;
+        string[] memory trimmedWhitelist = new string[](whitelistCount);
+        for (uint i = 0; i < whitelistCount; i++) {
+            trimmedWhitelist[i] = whitelist[i];
+        }
+
+        return trimmedWhitelist;
     }
 
     function tryGetTokenAddress(string calldata symbol) external view returns(address) {
