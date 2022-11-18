@@ -63,6 +63,10 @@ contract Flyweight {
         return whitelistedSymbols;
     }
 
+    function tryGetTokenAddress(string calldata symbol) external view returns(address) {
+        return tokenWhitelist.addresses(symbol);
+    }
+
     function addNewOrder(string calldata tokenIn, string calldata tokenOut, string calldata tokenInTriggerPrice, OrderTriggerDirection direction, uint tokenInAmount) external returns(uint) {
         uint id = ordersCount;
         orders[id] = Order({
