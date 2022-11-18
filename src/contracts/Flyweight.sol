@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./TokenWhitelist.sol";
 
 contract Flyweight {
     address constant public UNISWAP_ROUTER_ADDRESS = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
@@ -43,16 +44,14 @@ contract Flyweight {
     uint public ordersCount;
     mapping(uint => Order) public orders;
     mapping(string => string) public prices;
-    mapping(string => address) public tokenAddresses;
+    TokenWhitelist public immutable tokenWhitelist;
 
     constructor() {
-        tokenAddresses["UNI"] = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
-        tokenAddresses["WETH"] = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
+        tokenWhitelist = new TokenWhitelist(block.chainid);
+    }
 
-        IERC20 uni = IERC20(tokenAddresses["UNI"]);
-        IERC20 weth = IERC20(tokenAddresses["WETH"]);
-        uni.approve(UNISWAP_ROUTER_ADDRESS, type(uint).max);
-        weth.approve(UNISWAP_ROUTER_ADDRESS, type(uint).max);
+    function tryGetTokenAddress(string calldata symbol) external view returns(address) {
+        return tokenWhitelist.addresses(symbol);
     }
 
     function addNewOrder(string calldata tokenIn, string calldata tokenOut, string calldata tokenInTriggerPrice, OrderTriggerDirection direction, uint tokenInAmount) external returns(uint) {
@@ -101,10 +100,12 @@ contract Flyweight {
 
     function executeOrderId(uint orderId) private {
         Order storage order = orders[orderId];
-        uint balance = IERC20(address(tokenAddresses[order.tokenIn])).balanceOf(address(this));
+        address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
+        address tokenOutAddress = tokenWhitelist.addresses(order.tokenOut);
+        uint balance = IERC20(tokenInAddress).balanceOf(address(this));
         require(balance >= order.tokenInAmount);
 
-        address[2] memory path = [tokenAddresses[order.tokenIn], tokenAddresses[order.tokenOut]];
+        address[2] memory path = [tokenInAddress, tokenOutAddress];
         uint tokenOutMinQuote = 0;  // todo: when front-end is made, it should allow user-defined max slippage
 
         ISwapRouter swapRouter = ISwapRouter(UNISWAP_ROUTER_ADDRESS);
