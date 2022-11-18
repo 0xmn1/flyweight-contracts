@@ -50,8 +50,17 @@ contract Flyweight {
         tokenWhitelist = new TokenWhitelist(block.chainid);
     }
 
-    function tryGetTokenAddress(string calldata symbol) external view returns(address) {
-        return tokenWhitelist.addresses(symbol);
+    function getWhitelistedSymbols(string[] calldata symbols) external view returns(string[] memory) {
+        string[] memory whitelistedSymbols;
+        for (uint i = 0; i < symbols.length; i++) {
+            string calldata symbol = symbols[i];
+            bool isWhitelisted = tokenWhitelist.addresses(symbol) != address(0);
+            if (isWhitelisted) {
+                whitelistedSymbols[whitelistedSymbols.length] = symbol;
+            }
+        }
+
+        return whitelistedSymbols;
     }
 
     function addNewOrder(string calldata tokenIn, string calldata tokenOut, string calldata tokenInTriggerPrice, OrderTriggerDirection direction, uint tokenInAmount) external returns(uint) {
