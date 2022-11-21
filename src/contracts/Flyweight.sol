@@ -159,8 +159,8 @@ contract Flyweight {
         return ordersForAddress;
     }
 
-    function cancelOrder(uint orderId) external view {
-        Order memory order = orders[orderId];
+    function cancelOrder(uint orderId) external {
+        Order storage order = orders[orderId];
         assert(msg.sender == order.owner);
         order.orderState = OrderState.CANCELLED;
     }
