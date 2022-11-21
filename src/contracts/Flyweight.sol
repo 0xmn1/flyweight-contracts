@@ -38,6 +38,14 @@ contract Flyweight {
         uint orderId
     );
 
+    event OrderCancelled (
+        uint tokenInAmount,
+        string tokenIn,
+        address owner,
+        uint blockNumber,
+        uint blockTimestamp
+    );
+
     enum OrderState { UNTRIGGERED, EXECUTED, CANCELLED }
     enum OrderTriggerDirection { BELOW, EQUAL, ABOVE }
 
@@ -162,6 +170,17 @@ contract Flyweight {
     function cancelOrder(uint orderId) external {
         Order storage order = orders[orderId];
         assert(msg.sender == order.owner);
+        require(order.orderState != OrderState.CANCELLED);
+
+        address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
+        IERC20(tokenInAddress).transfer(order.owner, order.tokenInAmount);
         order.orderState = OrderState.CANCELLED;
+        emit OrderCancelled({
+            tokenInAmount: order.tokenInAmount,
+            tokenIn: order.tokenIn,
+            owner: order.owner,
+            blockNumber: block.number,
+            blockTimestamp: block.timestamp
+        });
     }
 }
