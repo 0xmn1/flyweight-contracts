@@ -38,11 +38,12 @@ contract Flyweight {
         uint orderId
     );
 
-    enum OrderState { UNTRIGGERED, EXECUTED }
+    enum OrderState { UNTRIGGERED, EXECUTED, CANCELLED }
     enum OrderTriggerDirection { BELOW, EQUAL, ABOVE }
 
     uint public ordersCount;
     mapping(uint => Order) public orders;
+    mapping(address => uint[]) public orderIdsByAddress;
     mapping(string => string) public prices;
     TokenWhitelist public immutable tokenWhitelist;
 
@@ -87,6 +88,7 @@ contract Flyweight {
             tokenInAmount: tokenInAmount
         });
 
+        orderIdsByAddress[msg.sender].push(id);
         ordersCount++;
         return id;
     }
@@ -120,6 +122,8 @@ contract Flyweight {
 
     function executeOrderId(uint orderId) private {
         Order storage order = orders[orderId];
+        assert(order.orderState == OrderState.UNTRIGGERED);
+
         address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
         address tokenOutAddress = tokenWhitelist.addresses(order.tokenOut);
         uint balance = IERC20(tokenInAddress).balanceOf(address(this));
@@ -142,5 +146,22 @@ contract Flyweight {
 
         swapRouter.exactInputSingle(swapParams);
         order.orderState = OrderState.EXECUTED;
+    }
+
+    function getOrdersByAddress(address addr) external view returns(Order[] memory) {
+        uint[] storage orderIds = orderIdsByAddress[addr];
+        Order[] memory ordersForAddress = new Order[](orderIds.length);
+        for (uint i = 0; i < orderIds.length; i++) {
+            uint orderId = orderIds[i];
+            ordersForAddress[i] = orders[orderId];
+        }
+
+        return ordersForAddress;
+    }
+
+    function cancelOrder(uint orderId) external view {
+        Order memory order = orders[orderId];
+        assert(msg.sender == order.owner);
+        order.orderState = OrderState.CANCELLED;
     }
 }
