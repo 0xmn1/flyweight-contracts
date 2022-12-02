@@ -20,6 +20,7 @@ contract Flyweight {
         string tokenInTriggerPrice;
         OrderTriggerDirection direction;
         uint tokenInAmount;
+        uint blockNumber;
     }
     struct NewPriceItem {
         string symbol;
@@ -110,12 +111,13 @@ contract Flyweight {
         orders[id] = Order({
             id: id,
             owner: msg.sender,
-            orderState: OrderState.UNTRIGGERED,
+            orderState: OrderState.PENDING_DEPOSIT,
             tokenIn: tokenIn,
             tokenOut: tokenOut,
             tokenInTriggerPrice: tokenInTriggerPrice,
             direction: direction,
-            tokenInAmount: tokenInAmount
+            tokenInAmount: tokenInAmount,
+            blockNumber: block.number
         });
 
         orderIdsByAddress[msg.sender].push(id);
@@ -224,6 +226,19 @@ contract Flyweight {
                     .UNTRIGGERED;
             }
         }
+    }
+
+    function getPendingDepositOrders() external view returns (Order[] memory) {
+        Order[] memory pendingDepositOrders = new Order[](ordersCount);
+        uint pendingDepositOrdersCount = 0;
+        for (uint i = 0; i < ordersCount; i++) {
+            if (orders[i].orderState == OrderState.PENDING_DEPOSIT) {
+                pendingDepositOrders[pendingDepositOrdersCount] = orders[i];
+                pendingDepositOrdersCount++;
+            }
+        }
+
+        return pendingDepositOrders;
     }
 
     modifier onlyValidOracle() {
