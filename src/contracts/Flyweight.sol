@@ -8,6 +8,8 @@ import "./TokenWhitelist.sol";
 contract Flyweight {
     address public constant UNISWAP_ROUTER_ADDRESS =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
+    address public constant ORACLE_NODE_ADDRESS =
+        0xAF3e8346F1B57B0915851dBA3a1CDE65CF8dF522;
 
     struct Order {
         uint id;
@@ -23,6 +25,10 @@ contract Flyweight {
         string symbol;
         string price;
     }
+    struct NewDepositTx {
+        uint orderId;
+        bytes32 txHash;
+    }
 
     event PriceUpdated(
         uint timestamp,
@@ -30,13 +36,9 @@ contract Flyweight {
         string oldPrice,
         string newPrice
     );
-
     event OrderTriggered(uint orderId);
-
     event OrderExecuted(uint orderId);
-
     event OrderCancelRequested(uint orderId, address sender);
-
     event OrderCancelled(
         uint orderId,
         uint tokenInAmount,
@@ -48,6 +50,7 @@ contract Flyweight {
 
     enum OrderState {
         UNTRIGGERED,
+        PENDING_DEPOSIT,
         EXECUTED,
         CANCELLED
     }
@@ -61,6 +64,7 @@ contract Flyweight {
     mapping(uint => Order) public orders;
     mapping(address => uint[]) public orderIdsByAddress;
     mapping(string => string) public prices;
+    mapping(uint => bytes32) public depositTxns;
     TokenWhitelist public immutable tokenWhitelist;
 
     constructor() {
@@ -122,7 +126,7 @@ contract Flyweight {
     function storePricesAndProcessTriggeredOrderIds(
         NewPriceItem[] calldata newPriceItems,
         uint[] calldata newTriggeredOrderIds
-    ) external {
+    ) external onlyValidOracle {
         for (uint i = 0; i < newPriceItems.length; i++) {
             NewPriceItem memory item = newPriceItems[i];
             string memory oldPrice = prices[item.symbol];
@@ -205,5 +209,25 @@ contract Flyweight {
             blockNumber: block.number,
             blockTimestamp: block.timestamp
         });
+    }
+
+    function storeDepositTransactionsAndUpdateOrderStates(
+        NewDepositTx[] calldata txns
+    ) external onlyValidOracle {
+        for (uint i = 0; i < txns.length; i++) {
+            NewDepositTx calldata newDepositTx = txns[i];
+            depositTxns[newDepositTx.orderId] = newDepositTx.txHash;
+
+            Order storage order = orders[newDepositTx.orderId];
+            if (order.orderState == OrderState.PENDING_DEPOSIT) {
+                orders[newDepositTx.orderId].orderState = OrderState
+                    .UNTRIGGERED;
+            }
+        }
+    }
+
+    modifier onlyValidOracle() {
+        assert(msg.sender == ORACLE_NODE_ADDRESS);
+        _;
     }
 }
