@@ -198,7 +198,7 @@ contract Flyweight {
 
         Order storage order = orders[orderId];
         assert(msg.sender == order.owner);
-        require(order.orderState != OrderState.CANCELLED);
+        require(order.orderState == OrderState.UNTRIGGERED);
 
         address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
         IERC20(tokenInAddress).transfer(order.owner, order.tokenInAmount);
