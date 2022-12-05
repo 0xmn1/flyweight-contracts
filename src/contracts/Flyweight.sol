@@ -106,7 +106,16 @@ contract Flyweight {
         string calldata tokenInTriggerPrice,
         OrderTriggerDirection direction,
         uint tokenInAmount
-    ) external returns (uint) {
+    ) external onlyEoa returns (uint) {
+        // Only allow 1 pending order per user
+        uint[] storage orderIds = orderIdsByAddress[msg.sender];
+        if (orderIds.length > 0) {
+            uint lastOrderId = orderIds[orderIds.length - 1];
+            require(
+                orders[lastOrderId].orderState != OrderState.PENDING_DEPOSIT
+            );
+        }
+
         uint id = ordersCount;
         orders[id] = Order({
             id: id,
@@ -128,7 +137,7 @@ contract Flyweight {
     function storePricesAndProcessTriggeredOrderIds(
         NewPriceItem[] calldata newPriceItems,
         uint[] calldata newTriggeredOrderIds
-    ) external onlyValidOracle {
+    ) external onlyEoa onlyValidOracle {
         for (uint i = 0; i < newPriceItems.length; i++) {
             NewPriceItem memory item = newPriceItems[i];
             string memory oldPrice = prices[item.symbol];
@@ -193,15 +202,21 @@ contract Flyweight {
         return ordersForAddress;
     }
 
-    function cancelOrder(uint orderId) external {
+    function cancelOrder(uint orderId) external onlyEoa {
         emit OrderCancelRequested({orderId: orderId, sender: msg.sender});
 
         Order storage order = orders[orderId];
         assert(msg.sender == order.owner);
-        require(order.orderState == OrderState.UNTRIGGERED);
+        require(
+            order.orderState == OrderState.PENDING_DEPOSIT ||
+                order.orderState == OrderState.UNTRIGGERED
+        );
 
-        address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
-        IERC20(tokenInAddress).transfer(order.owner, order.tokenInAmount);
+        if (order.orderState == OrderState.UNTRIGGERED) {
+            address tokenInAddress = tokenWhitelist.addresses(order.tokenIn);
+            IERC20(tokenInAddress).transfer(order.owner, order.tokenInAmount);
+        }
+
         order.orderState = OrderState.CANCELLED;
         emit OrderCancelled({
             orderId: order.id,
@@ -215,7 +230,7 @@ contract Flyweight {
 
     function storeDepositTransactionsAndUpdateOrderStates(
         NewDepositTx[] calldata txns
-    ) external onlyValidOracle {
+    ) external onlyEoa onlyValidOracle {
         for (uint i = 0; i < txns.length; i++) {
             NewDepositTx calldata newDepositTx = txns[i];
             depositTxns[newDepositTx.orderId] = newDepositTx.txHash;
@@ -243,6 +258,11 @@ contract Flyweight {
 
     modifier onlyValidOracle() {
         assert(msg.sender == ORACLE_NODE_ADDRESS);
+        _;
+    }
+
+    modifier onlyEoa() {
+        assert(msg.sender == tx.origin);
         _;
     }
 }
