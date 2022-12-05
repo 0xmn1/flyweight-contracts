@@ -107,9 +107,14 @@ contract Flyweight {
         OrderTriggerDirection direction,
         uint tokenInAmount
     ) external onlyEoa returns (uint) {
+        // Only allow 1 pending order per user
         uint[] storage orderIds = orderIdsByAddress[msg.sender];
-        uint lastOrderId = orderIds[orderIds.length - 1];
-        require(orders[lastOrderId].orderState != OrderState.PENDING_DEPOSIT); // Only allow 1 pending order per user
+        if (orderIds.length > 0) {
+            uint lastOrderId = orderIds[orderIds.length - 1];
+            require(
+                orders[lastOrderId].orderState != OrderState.PENDING_DEPOSIT
+            );
+        }
 
         uint id = ordersCount;
         orders[id] = Order({
