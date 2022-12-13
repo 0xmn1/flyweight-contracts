@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "es2016",
+    "module": "CommonJS",
+    "resolveJsonModule": true,
+    "outDir": "./build",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

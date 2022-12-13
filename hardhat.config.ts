@@ -1,8 +1,9 @@
-import "@nomicfoundation/hardhat-toolbox";
+import '@nomicfoundation/hardhat-toolbox';
 import 'solidity-docgen';
 
 import { HardhatUserConfig } from "hardhat/config";
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 if (!process.env.ALCHEMY_URL) {
