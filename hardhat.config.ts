@@ -1,7 +1,8 @@
-import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import dotenv from 'dotenv';
+import 'solidity-docgen';
 
+import { HardhatUserConfig } from "hardhat/config";
+import dotenv from 'dotenv';
 dotenv.config();
 
 if (!process.env.ALCHEMY_URL) {
@@ -44,7 +45,9 @@ const config: HardhatUserConfig = {
     apiKey: {
       goerli: process.env.GOERLI_ETHERSCAN_API_KEY
     }
-  }
+  },
+  docgen: {
+  },
 };
 
 export default config;
