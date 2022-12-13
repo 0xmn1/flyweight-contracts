@@ -10,6 +10,17 @@ This repo has **hardhat** integration, including build & deploy scripts.
 git clone git@github.com:0xmn1/flyweight-smart-contracts.git
 cd 'flyweight-smart-contracts'
 npm i
+```
+
+You will then need to do the usual secrets/env setup, which is in the `.env` file:
+- `ALCHEMY_URL` is an [Alchemy](https://dashboard.alchemy.com/) api url.
+- `GOERLI_PRIVATE_KEY` is an Alchemy **private** API key. Used by Hardhat during smart contract deployment.
+- `GOERLI_ETHERSCAN_API_KEY` is an [Etherscan](https://etherscan.io/) API key. Used by hardhat during smart contract source verification. 
+
+> Developer note: [Alchemy](https://dashboard.alchemy.com/) was originally chosen over [Infura](https://www.infura.io/) due to Infura logging IP addresses, however it has since come to public light that Alchemy *also* logs IP addresses. In the interest of decentralization, a more privacy-focused RPC provider is intended to be migrated to in the future.
+
+After the above initial one-time-dev-machine-setup, you can compile the contracts:
+```bash
 npm run compile
 ```
 
