@@ -221,6 +221,7 @@ contract Flyweight {
     }
   }
 
+  /// @return pendingDepositOrders fixed-sized array of pending orders. Array can contain orders with default values (e.g.: address(0) for the order "owner" property)
   function getPendingDepositOrders() external view returns (Order[] memory) {
     Order[] memory pendingDepositOrders = new Order[](ordersCount);
     uint pendingDepositOrdersCount = 0;
