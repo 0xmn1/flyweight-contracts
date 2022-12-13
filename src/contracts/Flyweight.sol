@@ -32,10 +32,15 @@ contract Flyweight {
     oracleNodeAddress = _oracleNodeAddress;
     ordersCount = 0;
     tokenWhitelist = new TokenWhitelist(
-      uniswapRouterAddress,
+      _uniswapRouterAddress,
       tokenSymbols,
       tokenAddresses
     );
+
+    for (uint i = 0; i < tokenSymbols.length; i++) {
+      /// @dev Approvals to automatically send erc20's upon swap execution, back to order owner address
+      IERC20(tokenAddresses[i]).approve(uniswapRouterAddress, type(uint).max);
+    }
   }
 
   /**

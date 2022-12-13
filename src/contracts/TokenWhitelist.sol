@@ -29,9 +29,6 @@ contract TokenWhitelist {
       string memory symbol = _symbols[i];
       address addr = _addresses[i];
       addresses[symbol] = addr;
-
-      /// This only approves the flyweight contract, not for a user/EOA wallet
-      IERC20(addr).approve(uniswapRouterAddress, type(uint).max);
     }
   }
 
