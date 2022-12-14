@@ -18,6 +18,12 @@ if (!process.env.GOERLI_ETHERSCAN_API_KEY) {
 
 const config: HardhatUserConfig = {
   solidity: {
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1,
+      },
+    },
     compilers: [
       {
         version: "0.7.0"
