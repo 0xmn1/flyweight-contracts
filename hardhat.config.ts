@@ -16,26 +16,32 @@ if (!process.env.GOERLI_ETHERSCAN_API_KEY) {
   throw 'Config error: missing goerli etherscan api key';
 }
 
+const settings = {
+  optimizer: {
+    enabled: true,
+    runs: 1,  // Optimize gas cost during contract creation
+  }
+};
+
 const config: HardhatUserConfig = {
   solidity: {
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 1,
-      },
-    },
+    settings,
     compilers: [
       {
-        version: "0.7.0"
+        version: "0.7.0",
+        settings
       },
       {
-        version: "0.7.5"
+        version: "0.7.5",
+        settings
       },
       {
-        version: "0.8.0"
+        version: "0.8.0",
+        settings
       },
       {
-        version: "0.8.17"
+        version: "0.8.17",
+        settings
       }
     ]
   },
